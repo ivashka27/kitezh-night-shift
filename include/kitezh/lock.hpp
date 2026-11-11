@@ -58,9 +58,14 @@ public:
     // Выпускает судно с позывным call_sign. Это должна быть голова очереди внутри.
     void exit(const std::string& call_sign);
 
+
 private:
-    // Поля и приватные методы добавляйте здесь.
-    // Публичные сигнатуры выше менять нельзя: тесты собираются против них.
+    Level level_ = Level::Low;
+    GateState lower_ = GateState::Closed;
+    GateState upper_ = GateState::Closed;
+    int cycles_ = 0;
+    std::vector<Vessel> vessels_;
+
 };
 
 }  // namespace kitezh
