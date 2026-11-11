@@ -59,6 +59,11 @@ public:
     void exit(const std::string& call_sign);
 
 private:
+    Level waterLevel;
+    GateState lowerGate;
+    GateState upperGate;
+    int pumpCount;
+    std::vector<Vessel> vessels;
     // Поля и приватные методы добавляйте здесь.
     // Публичные сигнатуры выше менять нельзя: тесты собираются против них.
 };
