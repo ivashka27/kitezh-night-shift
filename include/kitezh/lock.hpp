@@ -60,6 +60,11 @@ public:
 
 private:
     // Поля и приватные методы добавляйте здесь.
+    Level level_ = Level::Low;
+    GateState lower_gate_ = GateState::Closed;
+    GateState upper_gate_ = GateState::Closed;
+    int pump_cycles_ = 0;
+    std::vector<Vessel> inside_vessels_;
     // Публичные сигнатуры выше менять нельзя: тесты собираются против них.
 };
 
