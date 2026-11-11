@@ -47,7 +47,7 @@ ShiftReport runNightShift(const std::vector<Vessel>& queue) {
         if (first.kind != VesselKind::Oversized) {
             bool skipped = false;
 
-            for (const auto& vessel : remaining) {
+            for (auto& vessel : remaining) {
                 bool can_take = (
                     vessel.direction == direction &&
                     vessel.kind != VesselKind::Oversized &&
