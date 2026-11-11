@@ -1,5 +1,6 @@
 #pragma once
 
+#include "kitezh/geometry.hpp"
 #include "kitezh/vessel.hpp"
 
 #include <stdexcept>
@@ -61,6 +62,11 @@ public:
 private:
     // Поля и приватные методы добавляйте здесь.
     // Публичные сигнатуры выше менять нельзя: тесты собираются против них.
+    Level level_ = Level::Low;
+    GateState lower_gate_ = GateState::Closed;
+    GateState upper_gate_ = GateState::Closed;
+    int pump_cycles_ = 0;
+    std::vector<Vessel> inside_;
 };
 
-}  // namespace kitezh
+} // namespace kitezh
