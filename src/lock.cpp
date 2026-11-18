@@ -102,7 +102,10 @@ void Lock::enter(const Vessel& vessel) {
         throw LockError("Depth");
     }
 
-    if (gate(gate_by_direction(vessel.direction)) != GateState::Open) {
+    const Gate entry_gate =
+        (vessel.direction == Direction::Upstream) ? Gate::Lower : Gate::Upper;
+
+    if (gate(entry_gate) != GateState::Open) {
         throw LockError("Entry gate is closed");
     }
 
