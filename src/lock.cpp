@@ -1,51 +1,99 @@
 #include "kitezh/lock.hpp"
 
-#include <stdexcept>
-
 namespace kitezh {
 
-Lock::Lock() {
-    throw std::logic_error("Lock: реализуйте");
-}
+Lock::Lock() = default;
 
 Level Lock::level() const {
-    throw std::logic_error("Lock::level: реализуйте");
+    return level_;
 }
 
-GateState Lock::gate(Gate) const {
-    throw std::logic_error("Lock::gate: реализуйте");
+GateState Lock::gate(Gate gate) const {
+    return gate == Gate::Lower ? lower_gate_ : upper_gate_;
 }
 
 int Lock::pumpCycles() const {
-    throw std::logic_error("Lock::pumpCycles: реализуйте");
+    return pump_cycles_;
 }
 
 std::vector<Vessel> Lock::inside() const {
-    throw std::logic_error("Lock::inside: реализуйте");
+    return inside_;
 }
 
-void Lock::open(Gate) {
-    // Недопустимое открытие бросает LockError и не меняет камеру.
-    throw std::logic_error("Lock::open: реализуйте");
+void Lock::open(Gate gate) {
+    const Gate other = gate == Gate::Lower ? Gate::Upper : Gate::Lower;
+    const Level required = gate == Gate::Lower ? Level::Low : Level::High;
+    if (level_ != required || this->gate(other) == GateState::Open) {
+        throw LockError("Cannot open gate at this level or with the other gate open");
+    }
+    if (gate == Gate::Lower) {
+        lower_gate_ = GateState::Open;
+    } else {
+        upper_gate_ = GateState::Open;
+    }
 }
 
-void Lock::close(Gate) {
-    throw std::logic_error("Lock::close: реализуйте");
+void Lock::close(Gate gate) {
+    if (gate == Gate::Lower) {
+        lower_gate_ = GateState::Closed;
+    } else {
+        upper_gate_ = GateState::Closed;
+    }
 }
 
 void Lock::pump() {
-    // Отказ насоса не тратит такт и не сажает уже вошедшее судно на грунт.
-    throw std::logic_error("Lock::pump: реализуйте");
+    if (lower_gate_ == GateState::Open || upper_gate_ == GateState::Open) {
+        throw LockError("Close both gates before pumping");
+    }
+    const Level next = level_ == Level::Low ? Level::High : Level::Low;
+    const int depth = next == Level::Low ? kLowDepthDm : kHighDepthDm;
+    for (const Vessel& vessel : inside_) {
+        if (vessel.draft_dm > depth) {
+            throw LockError("Not enough depth at the destination level");
+        }
+    }
+    level_ = next;
+    ++pump_cycles_;
 }
 
-void Lock::enter(const Vessel&) {
-    // Внутри должна оказаться копия. Входной затвор сам не открывается.
-    throw std::logic_error("Lock::enter: реализуйте");
+void Lock::enter(const Vessel& vessel) {
+    if (validateVessel(vessel)) {
+        throw LockError("Invalid vessel");
+    }
+    const int depth = level_ == Level::Low ? kLowDepthDm : kHighDepthDm;
+    if (vessel.draft_dm > depth) {
+        throw LockError("Not enough depth to enter");
+    }
+    const Gate entrance = vessel.direction == Direction::Upstream ? Gate::Lower : Gate::Upper;
+    if (gate(entrance) != GateState::Open) {
+        throw LockError("Entrance gate is closed");
+    }
+    if (vessel.kind == VesselKind::Oversized && !inside_.empty()) {
+        throw LockError("Oversized vessel needs an empty chamber");
+    }
+    for (const Vessel& current : inside_) {
+        if (current.call_sign == vessel.call_sign) {
+            throw LockError("Call sign is already inside");
+        }
+        if (current.kind == VesselKind::Oversized) {
+            throw LockError("Oversized vessel cannot share the chamber");
+        }
+    }
+    if (!fitsInChamber(inside_, vessel)) {
+        throw LockError("Vessel does not fit in the chamber");
+    }
+    inside_.push_back(vessel);
 }
 
-void Lock::exit(const std::string&) {
-    // Выходит только голова очереди и только в свои ворота.
-    throw std::logic_error("Lock::exit: реализуйте");
+void Lock::exit(const std::string& call_sign) {
+    if (inside_.empty() || inside_.front().call_sign != call_sign) {
+        throw LockError("Only the first vessel may exit");
+    }
+    const Gate departure = inside_.front().direction == Direction::Upstream ? Gate::Upper : Gate::Lower;
+    if (gate(departure) != GateState::Open) {
+        throw LockError("Exit gate is closed");
+    }
+    inside_.erase(inside_.begin());
 }
 
 }  // namespace kitezh
