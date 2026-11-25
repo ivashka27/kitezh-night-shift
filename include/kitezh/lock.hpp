@@ -59,8 +59,11 @@ public:
     void exit(const std::string& call_sign);
 
 private:
-    // Поля и приватные методы добавляйте здесь.
-    // Публичные сигнатуры выше менять нельзя: тесты собираются против них.
+    Level currentLevel;
+    GateState lowerGate;
+    GateState upperGate;
+    int cycles;
+    std::vector<Vessel> vessels;
 };
 
 }  // namespace kitezh
