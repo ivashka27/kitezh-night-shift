@@ -3,6 +3,7 @@
 #include "kitezh/vessel.hpp"
 
 #include <stdexcept>
+#include <string>
 #include <vector>
 
 namespace kitezh {
@@ -28,7 +29,7 @@ public:
 };
 
 // Камера шлюза. Снаружи нельзя нарушить правила присваиванием в поле:
-// всё, что меняет смену, проходит через методы.
+// всё, что меняет смена, проходит через методы.
 // Публичные сигнатуры не меняйте. Поля и приватные методы — можно.
 class Lock {
 public:
@@ -59,8 +60,14 @@ public:
     void exit(const std::string& call_sign);
 
 private:
-    // Поля и приватные методы добавляйте здесь.
-    // Публичные сигнатуры выше менять нельзя: тесты собираются против них.
+    Level level_;
+    GateState lower_;
+    GateState upper_;
+    int pump_cycles_;
+    std::vector<Vessel> inside_;
+
+    GateState& slot(Gate gate);
+    const GateState& slot(Gate gate) const;
 };
 
 }  // namespace kitezh
