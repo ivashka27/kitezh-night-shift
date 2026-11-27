@@ -61,6 +61,11 @@ public:
 private:
     // Поля и приватные методы добавляйте здесь.
     // Публичные сигнатуры выше менять нельзя: тесты собираются против них.
+    Level current_level_ = Level::Low;
+    GateState lower_gate_state_ = GateState::Closed;
+    GateState upper_gate_state_ = GateState::Closed;
+    int pump_cycles_count_ = 0;
+    std::vector<Vessel> inside_vessels_;
 };
 
 }  // namespace kitezh
